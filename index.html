@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#080808">
+<title>Deehan Training — Week by Week</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --red:#8B1A1A; --redL:#c97070; --redBg:#1a0d0d;
+    --navy:#1F3864; --navyL:#7090c9; --navyBg:#0d1320;
+    --green:#16a34a; --greenL:#4ade80; --greenBg:#0a1f14;
+    --bg:#080808; --card:#0f0f0f; --line:#1c1c1c;
+    --txt:#e8e8e8; --dim:#666; --dimmer:#444;
+    --mono:'Courier New',monospace;
+  }
+  body { background:var(--bg); color:var(--txt); font-family:'Georgia',serif; padding-bottom:78px; min-height:100vh; }
+  .wrap { max-width:580px; margin:0 auto; padding:1rem; }
+
+  .hero { padding:1.4rem 1rem 1rem; border-bottom:1px solid var(--line); }
+  .hero .name { font-size:10px; color:var(--dimmer); letter-spacing:0.18em; text-transform:uppercase; font-family:var(--mono); margin-bottom:4px; }
+  .hero h1 { font-size:26px; font-weight:700; color:#fff; letter-spacing:-0.02em; }
+  .hero h1 span { color:var(--red); }
+  .hero .sub { font-size:12px; color:var(--dim); font-family:var(--mono); margin-top:4px; }
+
+  /* Week navigation */
+  .weeknav { display:flex; align-items:center; gap:10px; margin-bottom:1rem; }
+  .weeknav button {
+    background:var(--card); border:1px solid var(--line); color:#ccc;
+    border-radius:8px; padding:10px 16px; font-size:18px; cursor:pointer;
+    font-family:var(--mono); line-height:1;
+  }
+  .weeknav button:active { background:#1a1a1a; }
+  .weeknav .wkinfo { flex:1; text-align:center; }
+  .weeknav .wknum { font-size:18px; font-weight:700; color:#fff; }
+  .weeknav .wkmeta { font-size:11px; color:var(--dim); font-family:var(--mono); margin-top:2px; }
+
+  .weekpicker { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:1rem; justify-content:center; }
+  .wkdot {
+    width:30px; height:30px; border-radius:6px; border:1px solid var(--line);
+    background:var(--card); color:var(--dim); font-size:11px; font-family:var(--mono);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; font-weight:700;
+  }
+  .wkdot.str.on { background:var(--red); color:#fff; border-color:var(--red); }
+  .wkdot.hyp.on { background:var(--navy); color:#fff; border-color:var(--navy); }
+  .wkdot.logged::after { content:'·'; position:absolute; margin-top:-18px; margin-left:0; color:var(--greenL); font-size:20px; }
+
+  /* Phase banner */
+  .pbanner { border-radius:8px; padding:0.7rem 1rem; margin-bottom:1rem; font-size:12px; line-height:1.5; }
+  .pbanner.str { background:var(--redBg); border-left:3px solid var(--red); color:#d8b0b0; }
+  .pbanner.hyp { background:var(--navyBg); border-left:3px solid var(--navy); color:#aac0e0; }
+  .pbanner b { color:#fff; }
+  .pbanner .focus { font-family:var(--mono); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:11px; }
+
+  .weeknote { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:0.7rem 1rem; margin-bottom:1rem; font-size:12px; color:var(--redL); font-style:italic; line-height:1.5; }
+
+  /* Day tabs */
+  .daytabs { display:flex; gap:5px; margin-bottom:1rem; flex-wrap:wrap; }
+  .daytab {
+    flex:1; min-width:60px; padding:9px 4px; border-radius:7px; border:1px solid var(--line);
+    background:var(--card); color:var(--dim); font-family:var(--mono); font-size:12px;
+    font-weight:700; cursor:pointer; text-align:center;
+  }
+  .daytab.on { background:#fff; color:#000; border-color:#fff; }
+  .daytab.logged { border-color:var(--green); }
+
+  /* Session */
+  .shead { border-radius:10px 10px 0 0; padding:0.85rem 1rem; color:#fff; }
+  .shead.str { background:linear-gradient(135deg,var(--red),#6b1414); }
+  .shead.hyp { background:linear-gradient(135deg,var(--navy),#142847); }
+  .shead .stag { font-size:10px; opacity:0.7; font-family:var(--mono); text-transform:uppercase; letter-spacing:0.1em; }
+  .shead .stitle { font-size:18px; font-weight:700; margin-top:2px; }
+
+  .ex { background:var(--card); border:1px solid var(--line); border-top:none; }
+  .exdiv { background:var(--redBg); color:var(--redL); padding:7px 1rem; font-size:10px; font-weight:700; letter-spacing:0.1em; font-family:var(--mono); text-transform:uppercase; text-align:center; border-bottom:1px solid var(--line); }
+  .exdiv.hyp { background:var(--navyBg); color:var(--navyL); }
+  .exrow { padding:0.75rem 1rem; border-bottom:1px solid var(--line); }
+  .exname { font-size:14px; font-weight:700; color:#fff; }
+  .exrx { font-size:11px; color:var(--dim); font-family:var(--mono); margin-top:2px; }
+  .setgrid { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .setbox { display:flex; flex-direction:column; align-items:center; }
+  .setbox .setnum { font-size:9px; color:var(--dimmer); font-family:var(--mono); margin-bottom:3px; font-weight:700; letter-spacing:0.05em; }
+  .setbox .field { display:flex; flex-direction:column; gap:4px; }
+  .setbox .flabel { font-size:8px; color:var(--dimmer); font-family:var(--mono); text-align:center; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:-2px; }
+  .setbox input { width:52px; padding:7px 4px; text-align:center; background:#1a1a1a; border:1px solid var(--line); border-radius:5px; color:#fff; font-size:15px; font-family:var(--mono); }
+  .setbox input:focus { outline:none; border-color:var(--red); background:#222; }
+  .setbox.pr input.wt { border-color:var(--green); }
+  .setbox .lrpair { display:flex; gap:4px; }
+  .setbox .lrcol { display:flex; flex-direction:column; align-items:center; }
+  .setbox .lrcol input { width:36px; }
+  .setbox.lr { background:rgba(74,222,128,0.03); border-radius:6px; padding:4px; }
+  .prbadge { font-size:9px; color:var(--green); font-family:var(--mono); margin-top:6px; height:11px; }
+
+  /* Collapsible notes */
+  .notes-wrap { background:var(--card); border:1px solid var(--line); border-top:none; border-radius:0 0 10px 10px; }
+  .notes-toggle {
+    width:100%; padding:0.85rem 1rem; background:none; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between;
+    color:#aaa; font-family:var(--mono); font-size:12px; font-weight:700;
+    text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .notes-toggle .arrow { transition:transform 0.2s; color:var(--dim); }
+  .notes-toggle.open .arrow { transform:rotate(90deg); }
+  .notes-body { max-height:0; overflow:hidden; transition:max-height 0.25s ease; }
+  .notes-body.open { max-height:400px; }
+  .notes-body textarea {
+    width:100%; min-height:120px; background:#1a1a1a; border:1px solid var(--line);
+    border-radius:8px; color:#fff; font-family:'Georgia',serif; font-size:14px;
+    padding:10px; margin:0 0 1rem; line-height:1.5; resize:vertical;
+  }
+  .notes-body textarea:focus { outline:none; border-color:var(--red); }
+  .notes-inner { padding:0 1rem; }
+  .notes-prompt { font-size:11px; color:var(--dim); margin-bottom:8px; font-style:italic; }
+
+  .complete-btn { width:100%; padding:14px; margin-top:12px; border:none; border-radius:10px; font-size:14px; font-weight:700; font-family:var(--mono); cursor:pointer; background:var(--card); color:var(--dim); border:1px solid var(--line); text-transform:uppercase; letter-spacing:0.06em; }
+  .complete-btn.done { background:var(--green); color:#fff; border-color:var(--green); }
+
+  .restday { background:var(--card); border:1px solid var(--line); border-radius:0 0 10px 10px; padding:1.5rem 1rem; text-align:center; color:var(--dim); font-size:13px; line-height:1.6; }
+
+  .tabbar { position:fixed; bottom:0; left:0; right:0; background:#0c0c0c; border-top:1px solid var(--line); display:flex; z-index:40; padding-bottom:env(safe-area-inset-bottom); }
+  .tabbar button { flex:1; padding:11px 4px; background:none; border:none; cursor:pointer; color:var(--dimmer); font-family:var(--mono); font-size:10px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tabbar button.on { color:var(--redL); }
+  .tabbar .ico { font-size:17px; }
+
+  .section-title { font-size:11px; color:var(--dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:0.1em; margin:1.25rem 0 0.75rem; }
+  .prcard { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:1rem; margin-bottom:10px; }
+  .prcard h3 { font-size:14px; color:#fff; margin-bottom:8px; }
+  .prline { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid var(--line); font-size:12px; }
+  .prline:last-child { border:none; }
+  .prline .lift { color:#bbb; }
+  .prline .val { color:var(--green); font-family:var(--mono); font-weight:700; }
+  .databtn { width:100%; padding:12px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:#ccc; font-family:var(--mono); font-size:13px; cursor:pointer; margin-bottom:8px; }
+  .databtn.danger { color:var(--redL); border-color:#3a1515; }
+  .hint { font-size:11px; color:var(--dim); line-height:1.6; margin-bottom:1rem; }
+  textarea.data { width:100%; height:120px; background:#1a1a1a; border:1px solid var(--line); border-radius:8px; color:#fff; font-family:var(--mono); font-size:11px; padding:10px; }
+  .toast { position:fixed; bottom:78px; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:10px 20px; border-radius:8px; font-family:var(--mono); font-size:13px; z-index:100; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="name">Christopher Caleb Deehan</div>
+  <h1>Week by Week<span>.</span></h1>
+  <div class="sub">28 Weeks · Jun–Dec 2026 · DUP</div>
+</div>
+
+<div class="wrap">
+  <div id="view-log"></div>
+  <div id="view-progress" style="display:none"></div>
+  <div id="view-data" style="display:none"></div>
+</div>
+
+<div class="tabbar">
+  <button class="on" data-tab="log"><span class="ico">🏋️</span>Workout</button>
+  <button data-tab="progress"><span class="ico">📈</span>PRs</button>
+  <button data-tab="data"><span class="ico">💾</span>Data</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── WEEK SCHEDULE (28 weeks) ─────────────────────────── */
+const WEEKS = [
+  {wk:1,dates:"Jun 1–7",focus:"strength",phase:1,note:""},
+  {wk:2,dates:"Jun 8–14",focus:"hypertrophy",phase:1,note:""},
+  {wk:3,dates:"Jun 15–21",focus:"strength",phase:1,note:""},
+  {wk:4,dates:"Jun 22–28",focus:"hypertrophy",phase:1,note:""},
+  {wk:5,dates:"Jun 29–Jul 5",focus:"strength",phase:1,note:""},
+  {wk:6,dates:"Jul 6–12",focus:"hypertrophy",phase:1,note:""},
+  {wk:7,dates:"Jul 13–19",focus:"strength",phase:1,note:""},
+  {wk:8,dates:"Jul 20–26",focus:"hypertrophy",phase:1,note:"Phase 1 ends. Review weight progress."},
+  {wk:9,dates:"Aug 3–9",focus:"strength",phase:2,note:"Phase 2 starts. RDL & Goblet: form only, no load."},
+  {wk:10,dates:"Aug 10–16",focus:"hypertrophy",phase:2,note:"Week 2 of RDL/Goblet form phase."},
+  {wk:11,dates:"Aug 17–23",focus:"strength",phase:2,note:"Last form week. Load from next week."},
+  {wk:12,dates:"Aug 24–30",focus:"hypertrophy",phase:2,note:"RDL & Goblet Squat now loaded. Progress weekly."},
+  {wk:13,dates:"Sep 7–13",focus:"strength",phase:2,note:""},
+  {wk:14,dates:"Sep 14–20",focus:"hypertrophy",phase:2,note:""},
+  {wk:15,dates:"Sep 21–27",focus:"strength",phase:2,note:""},
+  {wk:16,dates:"Sep 28–Oct 4",focus:"hypertrophy",phase:2,note:"Phase 2 ends. Assess lower body progress."},
+  {wk:17,dates:"Oct 5–11",focus:"strength",phase:3,note:"Phase 3: full overload mandatory."},
+  {wk:18,dates:"Oct 12–18",focus:"hypertrophy",phase:3,note:""},
+  {wk:19,dates:"Oct 19–25",focus:"strength",phase:3,note:""},
+  {wk:20,dates:"Oct 26–Nov 1",focus:"hypertrophy",phase:3,note:""},
+  {wk:21,dates:"Nov 2–8",focus:"strength",phase:3,note:""},
+  {wk:22,dates:"Nov 9–15",focus:"hypertrophy",phase:3,note:""},
+  {wk:23,dates:"Nov 16–22",focus:"strength",phase:3,note:""},
+  {wk:24,dates:"Nov 23–29",focus:"hypertrophy",phase:3,note:""},
+  {wk:25,dates:"Nov 30–Dec 6",focus:"strength",phase:3,note:""},
+  {wk:26,dates:"Dec 7–13",focus:"hypertrophy",phase:3,note:""},
+  {wk:27,dates:"Dec 14–20",focus:"strength",phase:3,note:""},
+  {wk:28,dates:"Dec 21–27",focus:"hypertrophy",phase:3,note:"Final week. Full review before Phase 4."},
+];
+
+const PHASES = {
+  1:{label:"Phase 1",health:"~353→321 lbs",lower:"Machines only — no RDL/Goblet",cardio:"1 hr · 130–150 bpm",fast:"24-hr weekly"},
+  2:{label:"Phase 2",health:"~321→305 lbs",lower:"+RDL & Goblet Squat",cardio:"1 hr · 130–150 bpm",fast:"24-hr + optional 36-hr"},
+  3:{label:"Phase 3",health:"~305→284 lbs",lower:"Full lower body — overload",cardio:"1 hr · 130–150 bpm",fast:"24-hr + 48-hr monthly"},
+};
+
+/* ─── EXERCISES ────────────────────────────────────────── */
+/* flags: pr=track PR · lr=Left/Right inputs per set · fail=to failure */
+
+// Shared ARM finisher (Upper weekdays) — all to failure, 3 sets each
+const ARM_FINISHER=[
+  {div:"ARM FINISHER · to failure"},
+  {n:"EZ Bar Curl",rx:"3 sets · failure",sets:3,fail:true},
+  {n:"Overhead Tricep Ext",rx:"3 sets · failure",sets:3,fail:true},
+  {n:"Hammer Curl",rx:"3 sets · failure · per arm",sets:3,fail:true,lr:true},
+  {n:"Tricep Pushdown",rx:"3 sets · failure",sets:3,fail:true},
+  {n:"Concentration Curl",rx:"3 sets · failure · per arm",sets:3,fail:true,lr:true},
+  {n:"DB Skull Crushers",rx:"3 sets · failure",sets:3,fail:true},
+];
+// Shared GRIP finisher (Lower days) — all to failure, 3 sets each
+const GRIP_FINISHER=[
+  {div:"GRIP FINISHER · to failure"},
+  {n:"Posterior Wrist Curl",rx:"3 sets · failure",sets:3,fail:true},
+  {n:"Anterior Wrist Raise",rx:"3 sets · failure",sets:3,fail:true},
+  {n:"Plate Pinch",rx:"3 sets · failure · per hand",sets:3,fail:true,lr:true},
+  {n:"Crusher",rx:"3 sets · failure · per hand",sets:3,fail:true,lr:true},
+  {n:"Static Hold",rx:"3 sets · failure · per hand",sets:3,fail:true,lr:true},
+];
+
+// ── UPPER (weekdays Mon/Wed) — ARMS finisher only ──
+const UPPER_S=[
+  {n:"Barbell Bench Press",rx:"5×3–5 · HEAVY · 3–4 min",sets:5,pr:true},
+  {n:"Barbell Row (Pendlay)",rx:"5×3–5 · HEAVY · 3–4 min",sets:5,pr:true},
+  {n:"Overhead Press",rx:"4×3–5 · HEAVY · 3 min",sets:4,pr:true},
+  {n:"Pull-Ups / Lat Pulldown",rx:"4×4–6 · add weight",sets:4,pr:true},
+  ...ARM_FINISHER,
+];
+const UPPER_H=[
+  {n:"Incline Dumbbell Press",rx:"4 sets · failure · 60s rest",sets:4,pr:true,fail:true},
+  {n:"Cable Row",rx:"4 sets · failure · 60s rest",sets:4,pr:true,fail:true},
+  {n:"Overhead Press (DB)",rx:"3 sets · failure · 60s rest",sets:3,pr:true,fail:true},
+  {n:"Lat Pulldown",rx:"3 sets · failure · 60s rest",sets:3,pr:true,fail:true},
+  {n:"Lateral Raise",rx:"3 sets · failure · per arm · 45s",sets:3,fail:true,lr:true},
+  {n:"Face Pull",rx:"3 sets · failure · 45s rest",sets:3,fail:true},
+  ...ARM_FINISHER,
+];
+
+// ── LOWER A (Tue) — GRIP finisher ──
+const LA_S=[
+  {n:"Leg Press",rx:"5×4–6 · HEAVY · 3–4 min",sets:5,pr:true},
+  {n:"Leg Extension",rx:"3×8–10 · 90s",sets:3},
+  {n:"Hamstring Curl",rx:"3×8–10 · 90s",sets:3},
+  {n:"Hip Abduction",rx:"3×12–15 · 75s",sets:3},
+  {n:"Hip Adduction",rx:"3×12–15 · 75s",sets:3},
+  {n:"Calf Raise",rx:"4×8–10 · slow",sets:4},
+  ...GRIP_FINISHER,
+];
+const LA_S_RDL={n:"Romanian Deadlift",rx:"4×6–8 · controlled · 2 min",sets:4,pr:true};
+const LA_H=[
+  {n:"Leg Press",rx:"4 sets · failure · 60s",sets:4,pr:true,fail:true},
+  {n:"Leg Extension",rx:"4 sets · failure · 45s · squeeze",sets:4,fail:true},
+  {n:"Hamstring Curl",rx:"4 sets · failure · 45s · slow",sets:4,fail:true},
+  {n:"Hip Abduction",rx:"3 sets · failure · 45s",sets:3,fail:true},
+  {n:"Hip Adduction",rx:"3 sets · failure · 45s",sets:3,fail:true},
+  {n:"Calf Raise",rx:"4 sets · failure · full ROM",sets:4,fail:true},
+  ...GRIP_FINISHER,
+];
+const LA_H_RDL={n:"Romanian Deadlift",rx:"3 sets · failure · slow eccentric",sets:3,pr:true,fail:true};
+
+// ── LOWER B (Fri) — GRIP finisher ──
+const LB_S=[
+  {n:"Leg Press",rx:"5×6–8 · HEAVY · 3–4 min",sets:5,pr:true},
+  {n:"Leg Extension",rx:"3×8–10 · 90s",sets:3},
+  {n:"Hamstring Curl",rx:"3×8–10 · 90s",sets:3},
+  {n:"Hip Abduction",rx:"3×12–15 · 75s",sets:3},
+  {n:"Hip Adduction",rx:"3×12–15 · 75s",sets:3},
+  {n:"Calf Raise",rx:"4×8–10 · slow",sets:4},
+  ...GRIP_FINISHER,
+];
+const LB_S_GOB={n:"Goblet Squat",rx:"3×8–10 · full depth · 2 min",sets:3,pr:true};
+const LB_H=[
+  {n:"Leg Press",rx:"4 sets · failure · 60s",sets:4,pr:true,fail:true},
+  {n:"Leg Extension",rx:"4 sets · failure · 45s · squeeze",sets:4,fail:true},
+  {n:"Hamstring Curl",rx:"4 sets · failure · 45s · slow",sets:4,fail:true},
+  {n:"Hip Abduction",rx:"3 sets · failure · 45s",sets:3,fail:true},
+  {n:"Hip Adduction",rx:"3 sets · failure · 45s",sets:3,fail:true},
+  {n:"Calf Raise",rx:"4 sets · failure · full ROM",sets:4,fail:true},
+  ...GRIP_FINISHER,
+];
+const LB_H_GOB={n:"Goblet Squat",rx:"3 sets · failure · pause 1s bottom",sets:3,pr:true,fail:true};
+
+// ── UPPER C (Sat) — BOTH arms & grip, all to failure, all 4 sets ──
+const UPPER_C=[
+  {n:"Close-Grip Bench Press",rx:"4 sets · failure",sets:4,pr:true,fail:true},
+  {n:"Incline Dumbbell Curl",rx:"4 sets · failure",sets:4,fail:true},
+  {n:"Cable Tricep Pushdown",rx:"4 sets · failure",sets:4,fail:true},
+  {n:"Preacher Curl",rx:"4 sets · failure · per arm",sets:4,fail:true,lr:true},
+  {n:"Overhead Tricep Ext",rx:"4 sets · failure",sets:4,fail:true},
+  {n:"Concentration Curl",rx:"4 sets · failure · per arm",sets:4,fail:true,lr:true},
+  {n:"Hammer Curl",rx:"4 sets · failure · per arm",sets:4,fail:true,lr:true},
+  {n:"DB Skull Crushers",rx:"4 sets · failure",sets:4,fail:true},
+  {div:"GRIP FINISHER · to failure"},
+  {n:"Posterior Wrist Curl",rx:"4 sets · failure",sets:4,fail:true},
+  {n:"Anterior Wrist Raise",rx:"4 sets · failure",sets:4,fail:true},
+  {n:"Plate Pinch",rx:"4 sets · failure · per hand",sets:4,fail:true,lr:true},
+  {n:"Crusher",rx:"4 sets · failure · per hand",sets:4,fail:true,lr:true},
+  {n:"Static Hold",rx:"4 sets · failure · per hand",sets:4,fail:true,lr:true},
+];
+
+const DAYS=[
+  {key:"mon",label:"Mon",session:"upper"},
+  {key:"tue",label:"Tue",session:"lowerA"},
+  {key:"wed",label:"Wed",session:"upper"},
+  {key:"thu",label:"Thu",session:"rest",note:"Cycle only · Fast day"},
+  {key:"fri",label:"Fri",session:"lowerB"},
+  {key:"sat",label:"Sat",session:"upperC"},
+  {key:"sun",label:"Sun",session:"rest",note:"Full rest"},
+];
+
+function getExercises(session,phase,focus){
+  const isStr=focus==="strength";
+  const isP1=phase===1;
+  if(session==="upper") return isStr?UPPER_S:UPPER_H;
+  if(session==="upperC") return UPPER_C;
+  if(session==="lowerA"){const b=isStr?LA_S:LA_H; return isP1?b:[...b,isStr?LA_S_RDL:LA_H_RDL];}
+  if(session==="lowerB"){const b=isStr?LB_S:LB_H; return isP1?b:[...b,isStr?LB_S_GOB:LB_H_GOB];}
+  return [];
+}
+
+/* ─── STATE ────────────────────────────────────────────── */
+const KEY="deehan_wbw_v1";
+let state={week:1,day:"mon",logs:{},notes:{},completed:{},notesOpen:{}};
+function load(){try{const r=localStorage.getItem(KEY);if(r)state=Object.assign(state,JSON.parse(r));}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){toast("⚠ Save failed");}}
+function curWeek(){return WEEKS.find(w=>w.wk===state.week);}
+function logKey(){return `w${state.week}_${state.day}`;}
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1700);}
+
+/* ─── RENDER LOG ───────────────────────────────────────── */
+function renderLog(){
+  const v=document.getElementById("view-log");
+  const wkObj=curWeek();
+  const isStr=wkObj.focus==="strength";
+  const ph=PHASES[wkObj.phase];
+  const dayObj=DAYS.find(d=>d.key===state.day);
+  let html="";
+
+  // Week nav
+  html+=`<div class="weeknav">`;
+  html+=`<button onclick="changeWeek(-1)" ${state.week===1?'disabled style="opacity:0.3"':''}>‹</button>`;
+  html+=`<div class="wkinfo"><div class="wknum">Week ${wkObj.wk}</div><div class="wkmeta">${wkObj.dates} · ${ph.label}</div></div>`;
+  html+=`<button onclick="changeWeek(1)" ${state.week===28?'disabled style="opacity:0.3"':''}>›</button>`;
+  html+=`</div>`;
+
+  // Week picker dots
+  html+=`<div class="weekpicker">`;
+  WEEKS.forEach(w=>{
+    const on=w.wk===state.week?'on':'';
+    html+=`<div class="wkdot ${w.focus==='strength'?'str':'hyp'} ${on}" onclick="gotoWeek(${w.wk})">${w.wk}</div>`;
+  });
+  html+=`</div>`;
+
+  // Phase banner
+  html+=`<div class="pbanner ${isStr?'str':'hyp'}"><span class="focus">${isStr?'STRENGTH WEEK':'HYPERTROPHY WEEK'}</span><br><b>${ph.label}</b> · ${ph.health}<br>Lower: ${ph.lower} · Cardio: ${ph.cardio}</div>`;
+
+  // Week note
+  if(wkObj.note) html+=`<div class="weeknote">${wkObj.note}</div>`;
+
+  // Day tabs
+  html+=`<div class="daytabs">`;
+  DAYS.forEach(d=>{
+    let logged=false;
+    const ck=`${logKeyFor(d.key)}`;
+    if(state.completed[completedKey(state.week,d.key)]) logged=true;
+    html+=`<div class="daytab ${state.day===d.key?'on':''} ${logged?'logged':''}" onclick="setDay('${d.key}')">${d.label}</div>`;
+  });
+  html+=`</div>`;
+
+  // Rest day
+  if(dayObj.session==="rest"){
+    html+=`<div class="shead ${isStr?'str':'hyp'}"><div class="stag">${dayObj.label}</div><div class="stitle">${dayObj.note}</div></div>`;
+    html+=`<div class="restday">`;
+    html+=dayObj.key==="thu"?`🚲 1 hr fasted cycling · 130–150 bpm<br><small style="color:var(--dimmer)">Drop to 115–125 if genuinely weak. No lifting.</small>`:`🛑 Complete rest.<br><small style="color:var(--dimmer)">No cycling, no lifting. Recover.</small>`;
+    html+=`</div>`;
+    // Notes still available on rest days
+    html+=renderNotes(isStr);
+    v.innerHTML=html;
+    return;
+  }
+
+  // Session
+  const names={upper:isStr?"Upper — Strength":"Upper — Hypertrophy",lowerA:isStr?"Lower A — Strength":"Lower A — Hypertrophy",lowerB:isStr?"Lower B — Strength":"Lower B — Hypertrophy",upperC:"Upper C — Arms & Grip"};
+  const dayName=dayObj.session==="upper"?(state.day==="mon"?"Monday":"Wednesday"):dayObj.label;
+  html+=`<div class="shead ${isStr?'str':'hyp'}"><div class="stag">${dayName} · ${isStr?'STRENGTH':'HYPERTROPHY'}</div><div class="stitle">${names[dayObj.session]}</div></div>`;
+
+  const exercises=getExercises(dayObj.session,wkObj.phase,wkObj.focus);
+  const lk=logKey();
+  const dayLog=state.logs[lk]||{};
+
+  exercises.forEach((ex,ei)=>{
+    if(ex.div){html+=`<div class="exdiv ${isStr?'':'hyp'}">${ex.div}</div>`;return;}
+    const exLog=dayLog[ei]||{};
+    html+=`<div class="ex"><div class="exrow">`;
+    html+=`<div class="exname">${ex.n}</div><div class="exrx">${ex.rx}</div>`;
+    html+=`<div class="setgrid">`;
+    for(let s=0;s<ex.sets;s++){
+      const sd=exLog[s]||{};
+      if(ex.lr){
+        // Left/Right inputs: one WT shared + L reps + R reps (per set)
+        html+=`<div class="setbox lr ${ex.pr?'pr':''}"><div class="setnum">SET ${s+1}</div><div class="field">`;
+        html+=`<div class="flabel">WT</div><input type="text" inputmode="numeric" maxlength="3" class="wt" value="${sd.wt||''}" placeholder="–" onchange="logSet(${ei},${s},'wt',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">`;
+        html+=`<div class="lrpair">`;
+        html+=`<div class="lrcol"><div class="flabel">L</div><input type="text" inputmode="numeric" maxlength="3" class="reps" value="${sd.repsL||''}" placeholder="–" onchange="logSet(${ei},${s},'repsL',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>`;
+        html+=`<div class="lrcol"><div class="flabel">R</div><input type="text" inputmode="numeric" maxlength="3" class="reps" value="${sd.repsR||''}" placeholder="–" onchange="logSet(${ei},${s},'repsR',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>`;
+        html+=`</div></div></div>`;
+      } else {
+        html+=`<div class="setbox ${ex.pr?'pr':''}"><div class="setnum">SET ${s+1}</div><div class="field">`;
+        html+=`<div class="flabel">WT</div><input type="text" inputmode="numeric" maxlength="3" class="wt" value="${sd.wt||''}" placeholder="–" onchange="logSet(${ei},${s},'wt',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">`;
+        html+=`<div class="flabel">REPS</div><input type="text" inputmode="numeric" maxlength="3" class="reps" value="${sd.reps||''}" placeholder="–" onchange="logSet(${ei},${s},'reps',this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">`;
+        html+=`</div></div>`;
+      }
+    }
+    html+=`</div>`;
+    if(ex.pr){const b=getPR(ex.n);html+=b?`<div class="prbadge" style="padding:0 1rem 0.5rem">PR: ${b} lbs</div>`:`<div class="prbadge"></div>`;}
+    html+=`</div>`;
+  });
+
+  // Complete button
+  const ck=completedKey(state.week,state.day);
+  const done=state.completed[ck];
+  html+=`<button class="complete-btn ${done?'done':''}" onclick="toggleComplete()">${done?'✓ Completed':'Mark Session Complete'}</button>`;
+
+  // Collapsible notes
+  html+=renderNotes(isStr);
+
+  v.innerHTML=html;
+}
+
+function renderNotes(isStr){
+  const nk=notesKey(state.week,state.day);
+  const noteVal=state.notes[nk]||"";
+  const isOpen=state.notesOpen[nk];
+  let h=`<div class="notes-wrap" style="margin-top:12px;border-radius:10px;border-top:1px solid var(--line)">`;
+  h+=`<button class="notes-toggle ${isOpen?'open':''}" onclick="toggleNotes()"><span>📝 Session Notes${noteVal?' •':''}</span><span class="arrow">›</span></button>`;
+  h+=`<div class="notes-body ${isOpen?'open':''}">`;
+  h+=`<div class="notes-inner">`;
+  h+=`<div class="notes-prompt">PRs hit, how it felt, what to load next time, form cues…</div>`;
+  h+=`<textarea placeholder="Type your notes for this session…" onchange="saveNote(this.value)">${noteVal}</textarea>`;
+  h+=`</div></div></div>`;
+  return h;
+}
+
+function logKeyFor(day){return `w${state.week}_${day}`;}
+function completedKey(wk,day){return `w${wk}_${day}`;}
+function notesKey(wk,day){return `w${wk}_${day}`;}
+
+function logSet(ei,s,field,val){
+  const lk=logKey();
+  if(!state.logs[lk])state.logs[lk]={};
+  if(!state.logs[lk][ei])state.logs[lk][ei]={};
+  if(!state.logs[lk][ei][s])state.logs[lk][ei][s]={};
+  state.logs[lk][ei][s][field]=val;
+  save();
+}
+function saveNote(val){
+  const nk=notesKey(state.week,state.day);
+  state.notes[nk]=val; save();
+}
+function toggleNotes(){
+  const nk=notesKey(state.week,state.day);
+  state.notesOpen[nk]=!state.notesOpen[nk]; save(); renderLog();
+}
+function toggleComplete(){
+  const ck=completedKey(state.week,state.day);
+  if(state.completed[ck])delete state.completed[ck];
+  else{state.completed[ck]=true;toast("✓ Session logged");}
+  save();renderLog();
+}
+function changeWeek(dir){
+  const nw=state.week+dir;
+  if(nw<1||nw>28)return;
+  state.week=nw; save(); renderLog();
+  window.scrollTo(0,0);
+}
+function gotoWeek(wk){state.week=wk;save();renderLog();window.scrollTo(0,0);}
+function setDay(d){state.day=d;save();renderLog();}
+
+function getPR(exName){
+  let best=0;
+  for(const lk in state.logs){
+    const parts=lk.match(/w(\d+)_(\w+)/);
+    if(!parts)continue;
+    const wkNum=+parts[1],dy=parts[2];
+    const wkObj=WEEKS.find(w=>w.wk===wkNum);
+    if(!wkObj)continue;
+    const dayObj=DAYS.find(d=>d.key===dy);
+    if(!dayObj||dayObj.session==="rest")continue;
+    const exs=getExercises(dayObj.session,wkObj.phase,wkObj.focus).filter(e=>!e.div);
+    exs.forEach((ex,ei)=>{
+      if(ex.n===exName&&state.logs[lk][ei]){
+        for(const s in state.logs[lk][ei]){
+          const v=parseFloat(state.logs[lk][ei][s].wt);
+          if(!isNaN(v)&&v>best)best=v;
+        }
+      }
+    });
+  }
+  return best>0?best:null;
+}
+
+/* ─── PROGRESS ─────────────────────────────────────────── */
+function renderProgress(){
+  const v=document.getElementById("view-progress");
+  let html=`<div class="section-title">Personal Records</div>`;
+  const lifts=["Barbell Bench Press","Barbell Row (Pendlay)","Overhead Press","Pull-Ups / Lat Pulldown","Leg Press","Romanian Deadlift","Goblet Squat","Incline Dumbbell Press","Cable Row","Overhead Press (DB)","Lat Pulldown","Close-Grip Bench Press"];
+  html+=`<div class="prcard"><h3>Top Lifts (best weight)</h3>`;
+  let any=false;
+  lifts.forEach(l=>{const pr=getPR(l);if(pr){html+=`<div class="prline"><span class="lift">${l}</span><span class="val">${pr} lbs</span></div>`;any=true;}});
+  if(!any)html+=`<div class="hint">No PRs yet. Log weights on the Workout tab.</div>`;
+  html+=`</div>`;
+  const totalSessions=Object.keys(state.completed).length;
+  const totalNotes=Object.values(state.notes).filter(n=>n&&n.trim()).length;
+  let totalSets=0;
+  for(const lk in state.logs)for(const ei in state.logs[lk])for(const s in state.logs[lk][ei]){const sd=state.logs[lk][ei][s];if(sd&&(sd.wt||sd.reps||sd.repsL||sd.repsR))totalSets++;}
+  html+=`<div class="prcard"><h3>Totals</h3>`;
+  html+=`<div class="prline"><span class="lift">Sessions completed</span><span class="val">${totalSessions} / 140</span></div>`;
+  html+=`<div class="prline"><span class="lift">Sets logged</span><span class="val">${totalSets}</span></div>`;
+  html+=`<div class="prline"><span class="lift">Notes written</span><span class="val">${totalNotes}</span></div>`;
+  html+=`</div>`;
+  v.innerHTML=html;
+}
+
+/* ─── DATA ─────────────────────────────────────────────── */
+function renderData(){
+  const v=document.getElementById("view-data");
+  let html=`<div class="section-title">Backup & Restore</div>`;
+  html+=`<div class="hint">Data saves on this device only. Export weekly and keep the text safe (email it to yourself). Import to restore on a new device.</div>`;
+  html+=`<button class="databtn" onclick="exportData()">⬆ Export Data (copy backup)</button>`;
+  html+=`<button class="databtn" onclick="document.getElementById('impbox').style.display='block'">⬇ Import Data (restore)</button>`;
+  html+=`<div id="impbox" style="display:none;margin-top:10px"><textarea class="data" id="imptext" placeholder="Paste backup here…"></textarea><button class="databtn" onclick="importData()" style="margin-top:8px">Restore from text</button></div>`;
+  html+=`<div id="expbox" style="display:none;margin-top:10px"><textarea class="data" id="exptext" readonly></textarea><div class="hint">Copy all text above and save it somewhere safe.</div></div>`;
+  html+=`<div class="section-title">Reset</div>`;
+  html+=`<button class="databtn danger" onclick="resetData()">⚠ Erase all data</button>`;
+  v.innerHTML=html;
+}
+function exportData(){const b=document.getElementById("expbox");const t=document.getElementById("exptext");t.value=JSON.stringify(state);b.style.display="block";t.select();try{document.execCommand("copy");toast("✓ Copied");}catch(e){toast("Select & copy");}}
+function importData(){const t=document.getElementById("imptext").value.trim();if(!t){toast("Paste backup first");return;}try{const d=JSON.parse(t);state=Object.assign({week:1,day:"mon",logs:{},notes:{},completed:{},notesOpen:{}},d);save();toast("✓ Restored");renderLog();}catch(e){toast("⚠ Invalid backup");}}
+function resetData(){if(confirm("Erase ALL data? Export a backup first if unsure.")){state={week:1,day:"mon",logs:{},notes:{},completed:{},notesOpen:{}};save();toast("Erased");renderLog();renderData();}}
+
+/* ─── TABS ─────────────────────────────────────────────── */
+document.querySelectorAll(".tabbar button").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".tabbar button").forEach(b=>b.classList.remove("on"));
+    btn.classList.add("on");
+    const tab=btn.dataset.tab;
+    ["log","progress","data"].forEach(t=>{document.getElementById("view-"+t).style.display=t===tab?"block":"none";});
+    if(tab==="progress")renderProgress();
+    if(tab==="data")renderData();
+  };
+});
+
+load();renderLog();
+</script>
+</body>
+</html>
